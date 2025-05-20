@@ -1,13 +1,24 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { getGraphData, type GraphDataResponse } from "./services/api.ts";
-import { PrefillModal } from "./layout/PrefillModal.tsx";
+import { PrefillFormModal } from "./layout/PrefillFormModal.tsx";
+import DAG from "./utils/dag.ts";
 
 function App() {
-  const [graphData, setGraphData] = useState<GraphDataResponse | null>(null);
-  const [prefillModalData, setPrefillModalData] = useState<
-    GraphDataResponse["forms"][number]["field_schema"]["properties"] | null
+  const [dag, setDag] = useState<DAG | null>(null);
+  const [currentPrefillFormId, setCurrentPrefillFormId] = useState<
+    string | null
   >(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // State to force re-renders when DAG is updated
+  const [updateCounter, setUpdateCounter] = useState(0);
+
+  // for debugging
+  const [graphData, setGraphData] = useState<GraphDataResponse | null>(null);
+
+  // Callback to trigger re-render when DAG is updated
+  const handleDagUpdate = useCallback(() => {
+    setUpdateCounter((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -16,39 +27,48 @@ function App() {
           tenantId: "your-tenant-id",
           blueprintVersionId: "your-blueprint-version-id",
         });
+        // Pass the update callback to the DAG constructor
+        const newDag = new DAG(data, handleDagUpdate);
+        setDag(newDag);
         setGraphData(data);
       } catch {
         console.error("Failed to fetch data from the server.");
       }
     };
-
     fetchInitialData();
-  }, []);
+  }, [handleDagUpdate]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {graphData?.forms.map((form, index) => (
-        <button
-          key={index}
-          onClick={() => {
-            setPrefillModalData(form.field_schema.properties);
-            dialogRef.current?.showModal();
-          }}
-        >
-          {form.name}
-        </button>
-      ))}
-
+      {dag &&
+        dag.traverse().map((node) => (
+          <button
+            key={node.nodeData.id}
+            onClick={() => {
+              setCurrentPrefillFormId(node.nodeData.id);
+              dialogRef.current?.showModal();
+            }}
+          >
+            {node.nodeData.data.name}
+          </button>
+        ))}
       <dialog ref={dialogRef}>
-        {prefillModalData && graphData && (
-          <PrefillModal properties={prefillModalData} graphData={graphData} />
-        )}
-        <button onClick={() => dialogRef.current?.close()}>Close</button>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          {dag && currentPrefillFormId && (
+            <PrefillFormModal
+              dag={dag}
+              prefillFormId={currentPrefillFormId}
+              forceUpdate={updateCounter} // Pass the counter to force re-render
+            />
+          )}
+          <button onClick={() => dialogRef.current?.close()}>Close</button>
+        </div>
       </dialog>
 
-      <pre className="text-left max-w-screen-md overflow-x-auto bg-gray-100 p-4 rounded">
-        {graphData ? JSON.stringify(graphData, null, 2) : "Loading..."}
-      </pre>
+      {/* <button onClick={() => console.log(dag?.traverse())}>see</button> */}
+      {/* <pre className="text-left max-w-screen-md overflow-x-auto bg-gray-100 p-4 rounded"> */}
+      {/*   {graphData ? JSON.stringify(graphData, null, 2) : "Loading..."} */}
+      {/* </pre> */}
     </div>
   );
 }

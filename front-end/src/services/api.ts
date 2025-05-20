@@ -1,3 +1,5 @@
+import type DAG from "../utils/dag";
+
 const API_BASE_URL = "http://localhost:3000/api/v1";
 
 export type GraphDataQuery = {
@@ -59,9 +61,7 @@ export type GraphDataResponse = {
   }[];
 };
 
-export const getGraphData = (
-  query: GraphDataQuery,
-): Promise<GraphDataResponse> =>
+export const getGraphData = (query: GraphDataQuery): Promise<DAG> =>
   fetch(
     `${API_BASE_URL}/${query.tenantId}/actions/blueprints/${query.blueprintVersionId}/graph`,
     {
