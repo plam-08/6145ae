@@ -83,6 +83,49 @@ class DAG {
     return this.infoMap.get(id);
   }
 
+  private buildReverseAdjacencyList(): Map<string, Node[]> {
+    const reverseAdjacencyList = new Map<string, Node[]>();
+
+    for (const node of this.graph.nodes) {
+      reverseAdjacencyList.set(node.id, []);
+    }
+
+    for (const edge of this.graph.edges) {
+      const sourceInfo = this.infoMap.get(edge.source);
+      if (!sourceInfo) continue;
+
+      const neighbors = reverseAdjacencyList.get(edge.target);
+      if (neighbors) {
+        neighbors.push(sourceInfo);
+      }
+    }
+
+    return reverseAdjacencyList;
+  }
+
+  public getNodesThatCanReach(targetId: string): Node[] {
+    const reverseAdjacencyList = this.buildReverseAdjacencyList();
+    const visited = new Set<string>();
+    const result: Node[] = [];
+
+    const dfs = (nodeId: string) => {
+      if (visited.has(nodeId)) return;
+      visited.add(nodeId);
+
+      const info = this.infoMap.get(nodeId);
+      if (info) {
+        result.push(info);
+      }
+
+      for (const neighbor of reverseAdjacencyList.get(nodeId) || []) {
+        dfs(neighbor.nodeData.id);
+      }
+    };
+
+    dfs(targetId);
+    return result.filter((node) => node.nodeData.id !== targetId); // Exclude the target itself
+  }
+
   public setFieldValueToNull(id: string, keyName: string): void {
     const node = this.infoMap.get(id);
     if (node?.formData) {

@@ -66,9 +66,9 @@ function App() {
       </dialog>
 
       {/* <button onClick={() => console.log(dag?.traverse())}>see</button> */}
-      {/* <pre className="text-left max-w-screen-md overflow-x-auto bg-gray-100 p-4 rounded"> */}
-      {/*   {graphData ? JSON.stringify(graphData, null, 2) : "Loading..."} */}
-      {/* </pre> */}
+      <pre className="text-left max-w-screen-md overflow-x-auto bg-gray-100 p-4 rounded">
+        {graphData ? JSON.stringify(graphData, null, 2) : "Loading..."}
+      </pre>
     </div>
   );
 }

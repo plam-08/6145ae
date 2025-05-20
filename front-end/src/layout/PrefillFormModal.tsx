@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { GoDatabase } from "react-icons/go";
 import { MdCancel } from "react-icons/md";
 import type DAG from "../utils/dag";
+import type { Node } from "../utils/dag";
 
 export const PrefillFormModal = (props: {
   dag: DAG;
@@ -9,6 +10,9 @@ export const PrefillFormModal = (props: {
   forceUpdate?: number; // Adding forceUpdate prop to trigger re-renders
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [nodeCanReachPrefillFormId, setNodeCanReachPrefillFormId] = useState<
+    Node[]
+  >([]);
 
   // Get the current node and its form properties
   const node = props.dag.getNode(props.prefillFormId);
@@ -35,6 +39,9 @@ export const PrefillFormModal = (props: {
             }}
             onClick={() => {
               dialogRef.current?.showModal();
+              setNodeCanReachPrefillFormId(
+                props.dag.getNodesThatCanReach(props.prefillFormId),
+              );
             }}
           >
             <GoDatabase />
@@ -72,36 +79,32 @@ export const PrefillFormModal = (props: {
       <dialog ref={dialogRef}>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           <h3>Select data element to map</h3>
-          <details open="">
-            <summary>Form A</summary>
-            <fieldset>
-              <label>
-                <input type="radio" name="radio-group" value="option1" />
-                Pick your poison: Option 1
-              </label>
-              <br />
-              <label>
-                <input type="radio" name="radio-group" value="option2" />
-                Pick your poison: Option 2
-              </label>
-            </fieldset>
-          </details>
-          <details open="">
-            <summary>Form A</summary>
-            <fieldset>
-              <label>
-                <input type="radio" name="radio-group" value="option1" />
-                Pick your poison: Option 1
-              </label>
-              <br />
-              <label>
-                <input type="radio" name="radio-group" value="option2" />
-                Pick your poison: Option 2
-              </label>
-            </fieldset>
-          </details>
+          {nodeCanReachPrefillFormId.length === 0 && (
+            <p>No data elements can reach this form.</p>
+          )}
+          {nodeCanReachPrefillFormId.map((node: Node, index: number) => (
+            <details key={index}>
+              <summary>{node.nodeData.data.name}</summary>
+              <div>
+                <fieldset>
+                  {Object.keys(
+                    node.formData?.field_schema?.properties || {},
+                  ).map((key: string) => (
+                    <>
+                      <label key={key}>
+                        <input type="radio" name="radio-group" value={key} />
+                        {key}
+                      </label>
+                      <br />
+                    </>
+                  ))}
+                </fieldset>
+              </div>
+            </details>
+          ))}
+
           <button onClick={() => dialogRef.current?.close()}>Close</button>
-          <button onClick={() => dialogRef.current?.close()} disabled={true}>
+          <button onClick={() => dialogRef.current?.close()} disabled>
             Select
           </button>
         </div>
