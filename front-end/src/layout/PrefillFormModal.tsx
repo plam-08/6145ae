@@ -65,21 +65,21 @@ export const PrefillFormModal = ({
       <p>Prefill fields for this form</p>
 
       {formFields &&
-        Object.entries(formFields).map(([fieldName, fieldValue], index) =>
-          fieldValue == null ? (
-            <PrefillableField
-              key={`prefillable-${fieldName}-${index}`}
-              fieldName={fieldName}
-              onOpenPrefillDialog={handleOpenPrefillDialog}
-              updateKey={forceUpdate ?? 0}
-            />
-          ) : (
-            <PrefilledField
-              name={`${fieldName}: ${fieldValue.form_name}`}
-              onClick={() => handleClearPrefill(fieldName)}
-            />
-          ),
-        )}
+        Object.entries(formFields).map(([fieldName, fieldValue], index) => (
+          <div key={index}>
+            {fieldValue == null ? (
+              <PrefillableField
+                name={fieldName}
+                onClick={() => handleOpenPrefillDialog(fieldName)}
+              />
+            ) : (
+              <PrefilledField
+                name={`${fieldName}: ${fieldValue.form_name}`}
+                onClick={() => handleClearPrefill(fieldName)}
+              />
+            )}
+          </div>
+        ))}
 
       <PrefillSelectionModal
         dialogRef={selectionDialogRef}

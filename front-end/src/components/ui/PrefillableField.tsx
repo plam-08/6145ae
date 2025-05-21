@@ -1,19 +1,13 @@
 import { GoDatabase } from "react-icons/go";
 
 interface PrefillableFieldProps {
-  fieldName: string;
-  onOpenPrefillDialog: (fieldName: string) => void;
-  updateKey: number;
+  name: string;
+  onClick: () => void;
 }
 
-export const PrefillableField = ({
-  fieldName,
-  onOpenPrefillDialog,
-  updateKey,
-}: PrefillableFieldProps) => {
+export const PrefillableField = ({ name, onClick }: PrefillableFieldProps) => {
   return (
     <button
-      key={`${fieldName}-${updateKey}`}
       style={{
         display: "flex",
         flexDirection: "row",
@@ -26,10 +20,10 @@ export const PrefillableField = ({
         borderRadius: 5,
         alignItems: "center",
       }}
-      onClick={() => onOpenPrefillDialog(fieldName)}
+      onClick={onClick}
     >
       <GoDatabase />
-      {fieldName}
+      {name}
     </button>
   );
 };
