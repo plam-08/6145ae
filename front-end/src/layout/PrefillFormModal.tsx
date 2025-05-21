@@ -9,12 +9,10 @@ import { PrefilledField } from "../components/ui/PrefilledField";
 interface PrefillFormModalProps {
   dag: DAG;
   prefillFormId: string;
-  forceUpdate?: number;
 }
 
 export const PrefillFormModal = ({
   dag,
-  forceUpdate,
   prefillFormId,
 }: PrefillFormModalProps) => {
   const selectionDialogRef = useRef<HTMLDialogElement>(null);
@@ -81,11 +79,12 @@ export const PrefillFormModal = ({
           </div>
         ))}
 
-      <PrefillSelectionModal
-        dialogRef={selectionDialogRef}
-        nodeCanReachPrefillFormId={sourceNodes}
-        handleSubmit={handleSubmitSelection}
-      />
+      <dialog ref={selectionDialogRef}>
+        <PrefillSelectionModal
+          nodes={sourceNodes}
+          handleSubmit={handleSubmitSelection}
+        />
+      </dialog>
     </>
   );
 };

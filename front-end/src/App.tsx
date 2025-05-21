@@ -14,7 +14,7 @@ function App() {
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
   const modalRef = useRef<HTMLDialogElement>(null);
 
-  const [forceUpdateCounter, setForceUpdateCounter] = useState(0);
+  const [_forceUpdateCounter, setForceUpdateCounter] = useState(0);
   const triggerGraphUpdate = useCallback(() => {
     setForceUpdateCounter((prev) => prev + 1);
   }, []);
@@ -51,11 +51,7 @@ function App() {
       <dialog ref={modalRef}>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {graph && selectedFormId && (
-            <PrefillFormModal
-              dag={graph}
-              prefillFormId={selectedFormId}
-              forceUpdate={forceUpdateCounter}
-            />
+            <PrefillFormModal dag={graph} prefillFormId={selectedFormId} />
           )}
           <button onClick={() => modalRef.current?.close()}>Close</button>
         </div>
