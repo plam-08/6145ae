@@ -1,21 +1,13 @@
 import { MdCancel } from "react-icons/md";
 
 interface PrefilledFieldProps {
-  fieldName: string;
-  value: { form_name: string };
-  onClearPrefill: (fieldName: string) => void;
-  updateKey: number;
+  name: string;
+  onClick: () => void;
 }
 
-export const PrefilledField = ({
-  fieldName,
-  value,
-  onClearPrefill,
-  updateKey,
-}: PrefilledFieldProps) => {
+export const PrefilledField = ({ name, onClick }: PrefilledFieldProps) => {
   return (
     <div
-      key={`${fieldName}-${updateKey}`}
       style={{
         display: "flex",
         gap: 10,
@@ -25,7 +17,7 @@ export const PrefilledField = ({
         alignItems: "center",
       }}
     >
-      {fieldName}: {value.form_name}
+      {name}
       <button
         style={{
           display: "flex",
@@ -35,7 +27,7 @@ export const PrefilledField = ({
           background: "none",
           cursor: "pointer",
         }}
-        onClick={() => onClearPrefill(fieldName)}
+        onClick={() => onClick()}
       >
         <MdCancel />
       </button>

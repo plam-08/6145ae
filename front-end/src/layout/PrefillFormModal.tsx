@@ -14,8 +14,8 @@ interface PrefillFormModalProps {
 
 export const PrefillFormModal = ({
   dag,
-  prefillFormId,
   forceUpdate,
+  prefillFormId,
 }: PrefillFormModalProps) => {
   const selectionDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -23,7 +23,7 @@ export const PrefillFormModal = ({
   const [activeFieldName, setActiveFieldName] = useState<string | null>(null);
 
   const currentNode = dag.getNode(prefillFormId);
-  const formFields = currentNode?.formData?.field_schema.properties || {};
+  const formFields = currentNode?.formData?.field_schema.properties;
 
   // Open dialog to select a node to prefill the field
   const handleOpenPrefillDialog = (
@@ -64,24 +64,22 @@ export const PrefillFormModal = ({
       <h3>Prefill</h3>
       <p>Prefill fields for this form</p>
 
-      {Object.entries(formFields).map(([fieldName, fieldValue], index) =>
-        fieldValue == null ? (
-          <PrefillableField
-            key={`prefillable-${fieldName}-${index}`}
-            fieldName={fieldName}
-            onOpenPrefillDialog={handleOpenPrefillDialog}
-            updateKey={forceUpdate ?? 0}
-          />
-        ) : (
-          <PrefilledField
-            key={`prefilled-${fieldName}-${index}`}
-            fieldName={fieldName}
-            value={fieldValue}
-            onClearPrefill={handleClearPrefill}
-            updateKey={forceUpdate ?? 0}
-          />
-        ),
-      )}
+      {formFields &&
+        Object.entries(formFields).map(([fieldName, fieldValue], index) =>
+          fieldValue == null ? (
+            <PrefillableField
+              key={`prefillable-${fieldName}-${index}`}
+              fieldName={fieldName}
+              onOpenPrefillDialog={handleOpenPrefillDialog}
+              updateKey={forceUpdate ?? 0}
+            />
+          ) : (
+            <PrefilledField
+              name={`${fieldName}: ${fieldValue.form_name}`}
+              onClick={() => handleClearPrefill(fieldName)}
+            />
+          ),
+        )}
 
       <PrefillSelectionModal
         dialogRef={selectionDialogRef}

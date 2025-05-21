@@ -53,8 +53,8 @@ function App() {
           {graph && selectedFormId && (
             <PrefillFormModal
               dag={graph}
-              forceUpdate={forceUpdateCounter}
               prefillFormId={selectedFormId}
+              forceUpdate={forceUpdateCounter}
             />
           )}
           <button onClick={() => modalRef.current?.close()}>Close</button>
