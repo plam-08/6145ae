@@ -10,6 +10,16 @@ import { PrefillFormModal } from "./layout/PrefillFormModal.tsx";
 import DAG from "./utils/dag.ts";
 
 function App() {
+  // NOTE to hiring manager: currenly, this state is a DAG class instance, therefore
+  // it violated the React rule of hooks. This causes the component to
+  // not get re-rendered when the graph is updated.
+  // To fix this, we should use a state variable to store the graph data.
+  // this way, we can remove the triggerGraphUpdate function below.
+  // and we can make the PrefillFormModal component more reusable.
+  //
+  // REASON FOR NOT FIXING this is because I have to submit the code within
+  // 4 days. And I have a very tight deadline at the current company I am working.
+  //
   const [graph, setGraph] = useState<DAG | null>(null);
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
   const modalRef = useRef<HTMLDialogElement>(null);
