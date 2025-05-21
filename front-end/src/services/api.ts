@@ -1,5 +1,3 @@
-import type DAG from "../utils/dag";
-
 const API_BASE_URL = "http://localhost:3000/api/v1";
 
 export type GraphDataQuery = {
@@ -26,7 +24,7 @@ export type GraphDataResponse = {
         multi_select: object;
         name: object;
         notes: object;
-      };
+      } | null;
     };
     ui_schema: object;
     dynamic_field_config: object;
@@ -61,7 +59,12 @@ export type GraphDataResponse = {
   }[];
 };
 
-export const getGraphData = (query: GraphDataQuery): Promise<DAG> =>
+export const getGraphData = (
+  query: GraphDataQuery = {
+    tenantId: "tenantId",
+    blueprintVersionId: "blueprintVersionId",
+  },
+): Promise<GraphDataResponse> =>
   fetch(
     `${API_BASE_URL}/${query.tenantId}/actions/blueprints/${query.blueprintVersionId}/graph`,
     {
