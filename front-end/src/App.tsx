@@ -12,9 +12,6 @@ function App() {
   // State to force re-renders when DAG is updated
   const [updateCounter, setUpdateCounter] = useState(0);
 
-  // for debugging
-  const [graphData, setGraphData] = useState<GraphDataResponse | null>(null);
-
   // Callback to trigger re-render when DAG is updated
   const handleDagUpdate = useCallback(() => {
     setUpdateCounter((prev) => prev + 1);
@@ -30,7 +27,6 @@ function App() {
         // Pass the update callback to the DAG constructor
         const newDag = new DAG(data, handleDagUpdate);
         setDag(newDag);
-        setGraphData(data);
       } catch {
         console.error("Failed to fetch data from the server.");
       }
@@ -57,18 +53,13 @@ function App() {
           {dag && currentPrefillFormId && (
             <PrefillFormModal
               dag={dag}
+              forceUpdate={updateCounter}
               prefillFormId={currentPrefillFormId}
-              forceUpdate={updateCounter} // Pass the counter to force re-render
             />
           )}
           <button onClick={() => dialogRef.current?.close()}>Close</button>
         </div>
       </dialog>
-
-      {/* <button onClick={() => console.log(dag?.traverse())}>see</button> */}
-      <pre className="text-left max-w-screen-md overflow-x-auto bg-gray-100 p-4 rounded">
-        {graphData ? JSON.stringify(graphData, null, 2) : "Loading..."}
-      </pre>
     </div>
   );
 }

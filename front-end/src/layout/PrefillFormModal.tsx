@@ -13,10 +13,29 @@ export const PrefillFormModal = (props: {
   const [nodeCanReachPrefillFormId, setNodeCanReachPrefillFormId] = useState<
     Node[]
   >([]);
+  const [keyNamePrefillFormId, setKeyNamePrefillFormId] = useState<
+    string | null
+  >(null);
 
   // Get the current node and its form properties
   const node = props.dag.getNode(props.prefillFormId);
   const formProperties = node?.formData?.field_schema.properties || {};
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+
+    for (const [nodeId, selectedKey] of formData.entries()) {
+      props.dag.setFieldValue(
+        props.prefillFormId,
+        keyNamePrefillFormId,
+        nodeId,
+        selectedKey as string,
+      );
+    }
+    dialogRef.current?.close();
+  }
 
   return (
     <>
@@ -42,6 +61,7 @@ export const PrefillFormModal = (props: {
               setNodeCanReachPrefillFormId(
                 props.dag.getNodesThatCanReach(props.prefillFormId),
               );
+              setKeyNamePrefillFormId(key);
             }}
           >
             <GoDatabase />
@@ -79,34 +99,39 @@ export const PrefillFormModal = (props: {
       <dialog ref={dialogRef}>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           <h3>Select data element to map</h3>
-          {nodeCanReachPrefillFormId.length === 0 && (
-            <p>No data elements can reach this form.</p>
-          )}
-          {nodeCanReachPrefillFormId.map((node: Node, index: number) => (
-            <details key={index}>
-              <summary>{node.nodeData.data.name}</summary>
-              <div>
-                <fieldset>
-                  {Object.keys(
-                    node.formData?.field_schema?.properties || {},
-                  ).map((key: string) => (
-                    <>
-                      <label key={key}>
-                        <input type="radio" name="radio-group" value={key} />
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {nodeCanReachPrefillFormId.map((node: Node, index: number) => (
+                <details key={index}>
+                  <summary>{node.nodeData.data.name}</summary>
+                  <fieldset>
+                    {Object.keys(
+                      node.formData?.field_schema?.properties || {},
+                    ).map((key: string) => (
+                      <label key={key} style={{ display: "block" }}>
+                        <input
+                          type="radio"
+                          name={node.nodeData.id}
+                          value={key}
+                        />
                         {key}
                       </label>
-                      <br />
-                    </>
-                  ))}
-                </fieldset>
-              </div>
-            </details>
-          ))}
-
-          <button onClick={() => dialogRef.current?.close()}>Close</button>
-          <button onClick={() => dialogRef.current?.close()} disabled>
-            Select
-          </button>
+                    ))}
+                  </fieldset>
+                </details>
+              ))}
+              <input
+                type="submit"
+                value="Select"
+                style={{ display: "block" }}
+              />
+              <input
+                onClick={() => dialogRef.current?.close()}
+                type="button"
+                value="Cancel"
+              />
+            </div>
+          </form>
         </div>
       </dialog>
     </>

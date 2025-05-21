@@ -126,27 +126,51 @@ class DAG {
     return result.filter((node) => node.nodeData.id !== targetId); // Exclude the target itself
   }
 
-  public setFieldValueToNull(id: string, keyName: string): void {
+  public setFieldValue(
+    prefillFormId: string,
+    prefillKeyName: string,
+    id: string,
+    keyName: string,
+  ): void {
     const node = this.infoMap.get(id);
-    if (node?.formData) {
-      // Create a new copy of the form data
-      const updatedFormData = structuredClone(node.formData);
-      updatedFormData.field_schema.properties[keyName] = null as any;
+    const updatedFormData = structuredClone(
+      node?.formData?.field_schema.properties[keyName],
+    );
 
-      // Update the infoMap with the new form data
-      this.infoMap.set(id, {
-        ...node,
-        formData: updatedFormData,
-      });
+    if (!updatedFormData || !node) return;
 
-      // Notify about the update
-      if (this.onUpdate) {
-        this.onUpdate();
-      }
+    updatedFormData.form_name = `${node.nodeData.data.name}.${keyName}`;
+
+    console.log("updatedFormData", updatedFormData);
+
+    const prefillNode = this.infoMap.get(prefillFormId);
+    if (prefillNode?.formData?.field_schema?.properties) {
+      prefillNode.formData.field_schema.properties[prefillKeyName] =
+        updatedFormData;
+    }
+
+    // Notify about the update
+    if (this.onUpdate) {
+      this.onUpdate();
     }
   }
 
-  // Method to register update callback after initialization
+  public setFieldValueToNull(id: string, keyName: string): void {
+    const node = this.infoMap.get(id);
+    const updatedFormData = structuredClone(node?.formData);
+    updatedFormData.field_schema.properties[keyName] = null as any;
+
+    this.infoMap.set(id, {
+      ...node,
+      formData: updatedFormData,
+    });
+
+    // Notify about the update
+    if (this.onUpdate) {
+      this.onUpdate();
+    }
+  }
+
   public setUpdateCallback(callback: () => void): void {
     this.onUpdate = callback;
   }
