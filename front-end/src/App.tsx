@@ -1,58 +1,63 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+
+// Services
 import { getGraphData } from "./services/api.ts";
+
+// Components
 import { PrefillFormModal } from "./layout/PrefillFormModal.tsx";
+
+// Utils
 import DAG from "./utils/dag.ts";
 
 function App() {
-  const [dag, setDag] = useState<DAG | null>(null);
-  const [currentPrefillFormId, setCurrentPrefillFormId] = useState<
-    string | null
-  >(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [graph, setGraph] = useState<DAG | null>(null);
+  const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDialogElement>(null);
 
-  const [updateCounter, setUpdateCounter] = useState(0);
-  const handleDagUpdate = useCallback(() => {
-    setUpdateCounter((prev) => prev + 1);
+  const [forceUpdateCounter, setForceUpdateCounter] = useState(0);
+  const triggerGraphUpdate = useCallback(() => {
+    setForceUpdateCounter((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const loadGraphData = async () => {
       try {
-        const data = await getGraphData();
-        const newDag = new DAG(data, handleDagUpdate);
-        setDag(newDag);
+        const graphData = await getGraphData();
+        const initializedGraph = new DAG(graphData, triggerGraphUpdate);
+        setGraph(initializedGraph);
       } catch {
         console.error("Failed to fetch data from the server.");
       }
     };
-    fetchInitialData();
-  }, [handleDagUpdate]);
+
+    loadGraphData();
+  }, [triggerGraphUpdate]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {dag &&
-        dag.traverse().map((node) => (
+      {graph &&
+        graph.traverse().map((formNode) => (
           <button
-            key={node.nodeData.id}
+            key={formNode.nodeData.id}
             onClick={() => {
-              setCurrentPrefillFormId(node.nodeData.id);
-              dialogRef.current?.showModal();
+              setSelectedFormId(formNode.nodeData.id);
+              modalRef.current?.showModal();
             }}
           >
-            {node.nodeData.data.name}
+            {formNode.nodeData.data.name}
           </button>
         ))}
 
-      <dialog ref={dialogRef}>
+      <dialog ref={modalRef}>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          {dag && currentPrefillFormId && (
+          {graph && selectedFormId && (
             <PrefillFormModal
-              dag={dag}
-              forceUpdate={updateCounter}
-              prefillFormId={currentPrefillFormId}
+              dag={graph}
+              forceUpdate={forceUpdateCounter}
+              prefillFormId={selectedFormId}
             />
           )}
-          <button onClick={() => dialogRef.current?.close()}>Close</button>
+          <button onClick={() => modalRef.current?.close()}>Close</button>
         </div>
       </dialog>
     </div>

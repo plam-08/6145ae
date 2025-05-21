@@ -5,27 +5,30 @@ export type GraphDataQuery = {
   blueprintVersionId: string;
 };
 
+type FieldSchema = {
+  type: "object";
+  properties: Record<
+    | "button"
+    | "dynamic_checkbox_group"
+    | "dynamic_object"
+    | "email"
+    | "id"
+    | "multi_select"
+    | "name"
+    | "notes",
+    object
+  > | null;
+};
+
 export type GraphDataResponse = {
-  branches: [];
-  triggers: [];
+  branches: unknown[]; // Add specific types when available
+  triggers: unknown[];
   forms: {
     id: string;
     name: string;
     description: string;
     is_reusable: boolean;
-    field_schema: {
-      type: object;
-      properties: {
-        button: object;
-        dynamic_checkbox_group: object;
-        dynamic_object: object;
-        email: object;
-        id: object;
-        multi_select: object;
-        name: object;
-        notes: object;
-      } | null;
-    };
+    field_schema: FieldSchema;
     ui_schema: object;
     dynamic_field_config: object;
   }[];
@@ -59,22 +62,28 @@ export type GraphDataResponse = {
   }[];
 };
 
-export const getGraphData = (
+export async function getGraphData(
   query: GraphDataQuery = {
     tenantId: "tenantId",
     blueprintVersionId: "blueprintVersionId",
   },
-): Promise<GraphDataResponse> =>
-  fetch(
-    `${API_BASE_URL}/${query.tenantId}/actions/blueprints/${query.blueprintVersionId}/graph`,
-    {
+): Promise<GraphDataResponse> {
+  const url = `${API_BASE_URL}/${query.tenantId}/actions/blueprints/${query.blueprintVersionId}/graph`;
+
+  try {
+    const response = await fetch(url, {
       headers: {
         Accept: "application/json, application/problem+json",
       },
-    },
-  )
-    .then((response) => response.json())
-    .catch((error) => {
-      console.error("Error fetching graph data:", error);
-      throw error;
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch graph data: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching graph data:", error);
+    throw error;
+  }
+}
